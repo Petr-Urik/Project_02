@@ -5,7 +5,7 @@ from random import choice
 
 
 def udelej_caru():
-  print("-"*53)
+  print("-"*55)
 
 def privitani():
   """
