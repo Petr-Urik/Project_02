@@ -1,126 +1,148 @@
-from itertools import permutations
-from random import choice
+import inflect
 import time
+from random import shuffle
+from random import choice
 
-cara = "-" * 54
-print(f"Hi there!\n{cara}\nI've generated a random 4 digit number for you.")
-print(f"Lets play a bulls and caws game.\n{cara}")
 
-# generovani tajneho ctyrciferneho cisla
-def vrat_tajne_4ccislo()->str:
+def udelej_caru():
+  print("-"*53)
+
+def privitani():
+  """
+  Přivítá hráče ve hře.
+  """
+  udelej_caru()
+  print("Hi there!")
+  udelej_caru()
+  print("I've generated a random 4 digit number for you.")
+  print("Lets play a bulls and caws game.")
+
+def vrat_tajne_cislo()->str: # generovani tajneho ctyrciferneho cisla
   """
   Vrací tajné čtyřciferné číslo bez nuly na začátku.
   """
-  def generuj_4cpermutace()->list:
-    """
-    Vrací čtyřčetné permutace znaků ze stringu "0123456789"
-    """
-    permutace = permutations("0123456789", 4)
-    return ["".join(p) for p in permutace]
+  seznam = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  dotaz = True
+  while dotaz:
+    shuffle(seznam)
+    tajne_cislo = "".join(map(str, seznam[:4]))
+    if not tajne_cislo.startswith("0"):
+      return tajne_cislo
+  dotaz = False
 
-  #vyber permutaci bez nuly na zacatku
-  list_permutaci = generuj_4cpermutace()
-  soubor_tajne = []
-  for clen in list_permutaci:
-    if clen[0] == "0":
-      continue
-    soubor_tajne.append(clen)
-  return choice(soubor_tajne)
-
-# ziskani cisla od hrace a filtrovani inputu
-def filtruj_vstup()->str:
+def filtruj_vstup()->str: # ziskani cisla od hrace a filtrovani inputu
   """
-  Požádá o zadání čísla.
-  Zadanou hodnotu pustí dál jen pokud se jedná
+  Požádá o zadání čísla a zadanou hodnotu pustí dál, jen pokud se jedná
   o čtyřciferné číslo bez nuly na začátku.
   Jinak vypíše upozornění a požaduje nové zadání.
   """
   dotazovani = True
   while dotazovani:
-    enter_number = input("enter_number: ")
-    print(cara)
-    if not enter_number.isnumeric():
+    udelej_caru()
+    zadane_cislo = input("enter number: ")
+    if not zadane_cislo.isnumeric(): # pusti pouze ciselne znaky
       print("This is not number!")
-    elif len(str(enter_number))!= 4:
+    elif len(zadane_cislo)!= 4: # aby zadane cislo bylo ctyrciferne
       print("Four-digit number is necessary!")
-    elif (str(enter_number)[0]) == "0":
+    elif zadane_cislo.startswith("0"): # aby cislo nezacinalo nulou
       print("The first digit must not be zero!")
-    else:# aby se cislice neopakovaly
-      for p in range(10):
-        if (str(enter_number)).count(str(p)) > 1:
+    else: # aby se cislice neopakovaly
+      spravne_cislo = True
+      for index, cifra in enumerate(zadane_cislo):
+        if zadane_cislo.count(cifra) > 1:
           print("No digit can be used more than once!")
-        else:
-          dotazovani = False
-  return enter_number
+          spravne_cislo = False # zmena na False u opakujici se cislice
+          break # ukonceni vnitrni smycky u opakujici se cislice
+      if spravne_cislo: # zmena dotazovani na False u vyhovujiciho cisla
+        dotazovani = False
+  return zadane_cislo
 
-# porovnavani cisla od hrace s tajnym cislem
-def vrat_buls_cows(secret_number: str, number: str)->int:
+def vrat_bulls_cows(tajne_cislo: str, zadane_cislo: str)->tuple:
   """
   Porovnává číslo od hráče s tajným číslem.
-  Pokud nastane shoda v hodnotě i umístění určité číslice bulls se zvýší jednu.
-  Pokud je určitá číslice v hráčově čísle obsažena v tajném čísle,
-  ale nesouhlasí umístění, caws se zvýší o jednu.
-  ----------
-  Parametry:
-  secret_number: str
-  number: str
+  Při shodě v hodnotě i umístění určité číslice se bulls zvýší jednu.
+  Při shode v hodnote ale špatném umístění cows se zvýší o jednu.
   """
-  p = 0
   bulls = 0
   cows = 0
-
-  while p < 4:
-    if number[p] == secret_number[p]:
+  for index, cifra in enumerate(zadane_cislo):
+    if zadane_cislo[index] == tajne_cislo[index]:
       bulls += 1
     else:
-      if number[p] in secret_number:
-          cows += 1
-    p += 1
+      if zadane_cislo[index] in tajne_cislo:
+        cows += 1
   return bulls, cows
 
-#ziskani tajneho a zadaneho cisla pro porovnani a vyhodnoceni
-def vyhodnocuj_pokusy():
+def spravuj_plural(slovo: str, pocet: int)->str:
   """
-  Porovnává uživatelem zadaná čísla s tajným číslem.
-  Vyhodnocuje pokusy a přiděluje bulls a cows.
-  Současně měří čas do uhodnutí tajného čísla.
+  U anglických podst. jmen dle zadaného počtu vrací plurál nebo singulár.
   """
-  secret_number = vrat_tajne_4ccislo()
-  number = filtruj_vstup()
-  start_time = time.time()#zacatek mereni casu
+  p = inflect.engine()
+  if pocet == 1:
+    slovo = p.singular_noun(slovo)
+  return slovo
 
-  #porovnani a vyhodnocovani
-  guesses = 1
-  while number != secret_number:
-    bulls, cows = vrat_buls_cows(secret_number, number)
-    # podminky pro zajisteni mluvnicke spravnosti vysledku
-    if bulls == 1 and cows == 1:
-      print(f"bull: {bulls}, cow: {cows}\n{cara}")
-    elif bulls == 1 and cows != 1:
-      print(f"bull: {bulls}, cows: {cows}\n{cara}")
-    elif bulls != 1 and cows == 1:
-      print(f"bulls: {bulls}, cow: {cows}\n{cara}")
-    number = filtruj_vstup()
-    guesses += 1
-  end_time = time.time()#konec mereni casu
-  elapsed_time = round((end_time - start_time), 1)
-
-  print(f"Correct, you've guessed the right number in {guesses} guesses.")
-  print(f"You needed {elapsed_time} sec.\n{cara}\nThat's amazing!")
-
-def ridici_fce():
+def vypis_hodnoceni_pokusu(tajne_cislo: str, zadane_cislo: str)->int:
   """
-  Spustí první hru. Na jejím konci se ptá uživatele,
-  zda chce hrát znovu nebo program ukončit.
+  Vyhodnocuje pokusy, přiděluje a vypisuje bulls a cows.
   """
-  vyhodnocuj_pokusy()#prvni spusteni hry
-  print(f"{cara}\nAnother game?")
-  dotaz = input("Yes: enter y, No: enter n.")
-  while dotaz == "y":
-    vyhodnocuj_pokusy()#dalsi spusteni hry
-    print(f"{cara}\nAnother game?")
-    dotaz = input("Yes: enter y, No: enter n.")
-    print(cara)
-  print("Good bye!")
+  pocet_pokusu = 1
+  while zadane_cislo != tajne_cislo:
+    bulls, cows = vrat_bulls_cows(tajne_cislo, zadane_cislo)
+    # sprava pluralu
+    byci = spravuj_plural("bulls", bulls)
+    kravy = spravuj_plural("cows", cows)
+    print(f"{bulls} {byci}, {cows} {kravy}")
+    zadane_cislo = filtruj_vstup() # vyzva k zadani dalsiho cisla
+    pocet_pokusu += 1
+  return pocet_pokusu
 
-ridici_fce()
+def gratuluj_hraci(pocet_pokusu: int, potrebny_cas: float):
+  """
+  Vypíše gratulaci k uhodnutí tajného čísla.
+  Současně informuje o počtu potřebných pokusů a době do uhodnutí.
+  """
+  # sprava pluralu
+  pokusy = spravuj_plural("guesses", pocet_pokusu)
+  print(f"Correct, you've guessed the right number in {pocet_pokusu} {pokusy}")
+  print(f"You needed {potrebny_cas} sec.")
+  udelej_caru()
+  print("That's amazing!")
+
+def ovladej_hru():
+  """
+  Spustí hru. Na konci se ptá uživatele, zda chce hrát znovu nebo skončit.
+  V případě kladné odpovědi zahájí dalsí hru.
+  """
+  privitani() # uvodni hra
+  tajne_cislo = vrat_tajne_cislo()
+  print(tajne_cislo) # docasny prikaz pro testovani
+  start_cas = time.time()# zacatek mereni casu
+  zadane_cislo = filtruj_vstup()
+  pocet_pokusu = vypis_hodnoceni_pokusu(tajne_cislo, zadane_cislo)
+  konecny_cas = time.time()# konec mereni casu
+  potrebny_cas = round((konecny_cas - start_cas), 1)
+  udelej_caru()
+  gratuluj_hraci(pocet_pokusu, potrebny_cas)
+  udelej_caru()
+  print("Another game?")
+  dotaz = input("Yes: Enter y! No: Enter anything else! ")
+# dalsi hra
+  while dotaz.lower() == "y": # pro pripad, ze bude zadano velke Y
+    tajne_cislo = vrat_tajne_cislo()
+    print(tajne_cislo) # docasny prikaz pro testovani
+    start_cas = time.time()# zacatek noveho mereni casu
+    zadane_cislo = filtruj_vstup()
+    pocet_pokusu = vypis_hodnoceni_pokusu(tajne_cislo, zadane_cislo)
+    konecny_cas = time.time()# konec noveho mereni casu
+    potrebny_cas = round((konecny_cas - start_cas), 1)
+    udelej_caru()
+    gratuluj_hraci(pocet_pokusu, potrebny_cas)
+    udelej_caru()
+    print("Another game?")
+    dotaz = input("Yes: Enter y! No: Enter anything else! ")
+    udelej_caru()
+  print("Good bye!") # vypis pri rozhodnuti nepokracovat ve hre
+
+if __name__ == "__main__":
+  ovladej_hru()
