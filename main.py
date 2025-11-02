@@ -116,7 +116,6 @@ def ovladej_hru():
   """
   privitani() # uvodni hra
   tajne_cislo = vrat_tajne_cislo()
-  print(tajne_cislo) # docasny prikaz pro testovani
   start_cas = time.time()# zacatek mereni casu
   zadane_cislo = filtruj_vstup()
   pocet_pokusu = vypis_hodnoceni_pokusu(tajne_cislo, zadane_cislo)
@@ -130,7 +129,6 @@ def ovladej_hru():
 # dalsi hra
   while dotaz.lower() == "y": # pro pripad, ze bude zadano velke Y
     tajne_cislo = vrat_tajne_cislo()
-    print(tajne_cislo) # docasny prikaz pro testovani
     start_cas = time.time()# zacatek noveho mereni casu
     zadane_cislo = filtruj_vstup()
     pocet_pokusu = vypis_hodnoceni_pokusu(tajne_cislo, zadane_cislo)
