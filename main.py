@@ -24,7 +24,6 @@ def vrat_tajne_cislo()->str:
         shuffle(seznam)
         tajne_cislo = "".join(map(str, seznam[:4]))
         if not tajne_cislo.startswith("0"):
-            print(tajne_cislo)
             return tajne_cislo
             break
 
