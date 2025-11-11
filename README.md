@@ -5,4 +5,5 @@ Hra končí uhodnutím tajného čísla.
 Hráči je vypsán i počet pokusů a doba potřebná k uhodnutí.
 Do počtu pokusů se nepočítají případy, kdy hráč zadá něco jiného než čtyřciferné číslo bez nuly na začátku, měření času ale pokračuje.
 Poté následuje dotaz, zda chce uživatel pokračovat další hrou nebo skončit.
+Požadovanou správu plurálu jsem vyřešil funkcí 'spravuj_plural', která je aplikovatelná pouze na singuláry 'bull', 'cow' a 'guess', a to kvůli velkému množství výjimek v tvorbě anglického plurálu. Tuto problematiku jinak řeší knihovna Inflect.
 Z nabízených bonusů jsem zařadil dva: měření času do uhodnutí a opakování hry.
